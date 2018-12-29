@@ -1,0 +1,156 @@
+local BehaviorTree = {}
+
+setmetatable(BehaviorTree, { 
+	__call = function(...)
+		return BehaviorTree.New(...);
+	end
+});
+
+--[[
+	Node Types
+	----------
+	Sequence: Traverse children
+		- If any children fail, return failure
+		- If none fail, return success
+	Selector: Traverse children
+		- If any children succeed, return success
+		- If none succeed, return failure
+	Leaf: Return success/failure from user-defined function
+--]]
+
+function BehaviorTree:New(root)
+	assert(root, "Error: A root must exist.");	
+	assert(root.nodeType ~= "leaf", "Error: Root should not be a leaf");
+	local self = setmetatable({}, {__index = BehaviorTree});
+	
+	self.root = root;
+	self.currentNode = root;
+	
+	return self;
+end
+
+function BehaviorTree:GoUpTree()
+	print(self.currentNode.type..": "..self.currentNode.state);
+	if(self.currentNode ~= self.root) then
+		self.currentNode = self.currentNode.parent;
+	end
+end
+function BehaviorTree:Leaf()
+	local state = self.currentNode.nodeFunc();
+	self.currentNode.state = state;
+	self:GoUpTree();
+	return state;
+end
+function BehaviorTree:Selector()
+	for i, v in ipairs(self.currentNode.children) do
+		self.currentNode = v;
+		local state = self:TraverseTree();
+		if(state == "success") then
+			self.currentNode.state = "success";
+			self:GoUpTree();
+			return "success";
+		elseif(state == "running") then
+			self.currentNode.state = "running";
+			self:GoUpTree();
+			return "running";
+		end
+	end
+	self.currentNode.state = "failure";
+	self:GoUpTree();
+	return "failure";
+end
+function BehaviorTree:Sequence()
+	for i, v in ipairs(self.currentNode.children) do
+		self.currentNode = v;
+		local state = self:TraverseTree();
+		if(state == "failure") then
+			self.currentNode.state = "failure";
+			self:GoUpTree();
+			return "failure";
+		elseif(state == "running") then
+			self.currentNode.state = "running";
+			self:GoUpTree();
+			return "running";
+		end
+	end
+	self.currentNode.state = "success";
+	self:GoUpTree();
+	return "success";
+end
+function BehaviorTree:HandleDecorator()
+	local child = self.currentNode.children[1];
+	assert(child, "Error: Decorator must have a child.");
+	
+	local state = self:TraverseTree();
+	if(self.currentNode.type == "inverter") then
+		local endState = state == "success" and "failure" or 
+			(state == "failure" and "success" or state);
+		self.currentNode.state = endState;
+		self:GoUpTree();
+		return endState;
+	end
+end
+function BehaviorTree:TraverseTree()
+	local func;
+	if(self.currentNode.isDecorator) then
+		return self:HandleDecorator();
+	elseif(self.currentNode.type == "sequence") then
+		return self:Sequence();
+	elseif(self.currentNode.type == "selector") then
+		return self:Selector();
+	elseif(self.currentNode.type == "leaf") then
+		return self:Leaf();
+	end
+end
+	
+-- currently traversing entire tree from root every update, might find ways to make more efficient later
+function BehaviorTree:Update()
+	self.currentNode = self.root;
+	self:TraverseTree();
+end
+
+local Node = {}
+
+setmetatable(Node, { 
+	__call = function(...)
+		return Node.New(...);
+	end
+});
+
+function CheckIfDecorator(nodeType)
+	return nodeType ~= "selector" and nodeType ~= "sequence" and nodeType ~= "leaf";
+end
+
+local NodeTypes = {leaf = 0, selector = 1, sequence = 2, inverter = 3};
+
+function Node:New(nodeType, parent, nodeFunc)
+	assert(nodeType, "Error: Nodes must have a type");
+	assert(NodeTypes[nodeType], "Error: Node type "..nodeType.." does not exist");
+	local self = setmetatable({}, {__index = Node});
+	if(nodeType == "leaf") then
+		assert(nodeFunc, "Error: Node function must exist for leaf nodes");
+		self.nodeFunc = nodeFunc;
+	end
+	
+	self.parent = parent;
+	self.children = {};
+	self.type = nodeType;
+	
+	self.isDecorator = CheckIfDecorator(self.type);
+	
+	self.state = "init";
+	
+	return self;
+end
+
+function Node:CreateChild(nodeType, nodeFunc)
+	assert(self.type ~= "leaf", "Error: Leaf nodes have no children");
+	assert(not self.isDecorator or #self.children < 1, "Error: Decorators can only have 1 child.");
+	local node = Node(nodeType, self, nodeFunc);
+	self.children[#self.children+1] = node;
+	return node;
+end
+
+BehaviorTree.Node = Node;
+
+return BehaviorTree;
