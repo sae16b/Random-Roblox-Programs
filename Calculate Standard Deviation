@@ -1,0 +1,26 @@
+local f = {.02, .03, .05, .2, .4, .2, .07, .03}; -- x = i; f = f[x]
+
+local function getEWithXFunc(xFunc)
+	xFunc = xFunc or function(x)
+		return x;
+	end
+	local sum = 0;
+	for x = 1, #f do
+		sum = sum + xFunc(x)*f[x];
+	end
+	return sum;
+end
+
+print("E[X]: "..getEWithXFunc());
+
+print("E[X^2]: "..getEWithXFunc(function(x) return x^2 end));
+
+local function calculateSigmaSquared()
+	return getEWithXFunc(function(x) return x^2 end) - getEWithXFunc()^2; -- E[x^2] - E[x]^2
+end
+local function calculateStdDeviation()
+	return math.sqrt(calculateSigmaSquared());
+end
+
+print("Sigma^2: "..calculateSigmaSquared());
+print("Standard Deviation: "..calculateStdDeviation());
