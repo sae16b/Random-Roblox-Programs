@@ -1,0 +1,48 @@
+--[[
+	(a, b), (b, c) -> (a, c)
+]]--
+
+local function addToR(R, insertion)
+	for i, v in pairs(R) do
+		if(v[1] == insertion[1] and v[2] == insertion[2]) then
+			return false;
+		end
+	end
+	table.insert(R, insertion);
+end
+
+local function GetTransitiveClosure(R)
+	local exists = {};
+	local noneAdded = true;
+	for i, v in pairs(R) do
+		if(not exists[v[2]]) then
+			exists[v[2]] = {};
+		end
+		table.insert(exists[v[2]], v[1]);
+		if(exists[v[1]]) then
+			for j, k in pairs(exists[v[1]]) do
+				local somethingAdded = addToR(R, {k, v[2]});
+				if(somethingAdded) then
+					noneAdded = false;
+				end
+			end
+		end
+	end	
+	if(noneAdded) then
+		return R;
+	else
+		return GetTransitiveClosure(R);
+	end
+end
+
+--local R = {{1, 2}, {2, 3}, {3, 4}};
+local R = {{'a', 'b'}, {'b', 'c'}};
+
+GetTransitiveClosure(R); -- pass by reference
+
+local function printR()
+	for i, v in pairs(R) do
+		print('('..v[1]..','..v[2]..')');
+	end
+end
+printR();
