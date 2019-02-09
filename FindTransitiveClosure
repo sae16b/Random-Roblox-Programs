@@ -1,18 +1,29 @@
 --[[
 	(a, b), (b, c) -> (a, c)
 ]]--
+local function printR(R)
+	local str = '';
+	for i, v in pairs(R) do
+		str = str .. '('..v[1]..','..v[2]..')'..', ';
+	end
+	print(str);
+end
 
 local function addToR(R, insertion)
+	if(insertion[1] == 'b') then
+		--print('b'..insertion[2]);
+	end
 	for i, v in pairs(R) do
 		if(v[1] == insertion[1] and v[2] == insertion[2]) then
 			return false;
 		end
 	end
 	table.insert(R, insertion);
+	return true;
 end
 
-local function GetTransitiveClosure(R)
-	local exists = {};
+local function GetTransitiveClosure(R, exists)
+	exists = exists or {};
 	local noneAdded = true;
 	for i, v in pairs(R) do
 		if(not exists[v[2]]) then
@@ -31,18 +42,16 @@ local function GetTransitiveClosure(R)
 	if(noneAdded) then
 		return R;
 	else
-		return GetTransitiveClosure(R);
+		--print("Not done");
+		--printR(R);
+		return GetTransitiveClosure(R, exists);
 	end
 end
 
 --local R = {{1, 2}, {2, 3}, {3, 4}};
-local R = {{'a', 'b'}, {'b', 'c'}};
+--local R = {{'a', 'b'}, {'b', 'c'}};
+local R = {{'a', 'b'}, {'b', 'a'}, {'d', 'b'}, {'d', 'c'}, {'a', 'c'}, {'b', 'd'}};
 
+--printR(R);
 GetTransitiveClosure(R); -- pass by reference
-
-local function printR()
-	for i, v in pairs(R) do
-		print('('..v[1]..','..v[2]..')');
-	end
-end
-printR();
+printR(R);
