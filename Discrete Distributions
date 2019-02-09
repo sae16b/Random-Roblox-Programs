@@ -1,0 +1,18 @@
+local distributions = {
+	hypergeometric = function(N, r, n)
+		local E = n*(r/N);
+		print('E[x] = '..E);
+		local Var = n*(r/N)*((N-r)/N)*((N-n)/(N-1));
+		print('Var[x] = '..Var);
+	end
+}
+
+local testParams = {
+	hypergeometric = {15, 4, 3};
+}
+
+local equalstring = '==============================';
+for i, v in pairs(distributions) do
+	print(equalstring.." "..i.." "..equalstring);
+	v(unpack(testParams[i]));
+end
