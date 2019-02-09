@@ -8,7 +8,7 @@ local distributions = {
 }
 
 local testParams = {
-	hypergeometric = {15, 4, 3};
+	hypergeometric = {15, 4, 3}; -- N, r, n
 }
 
 local equalstring = '==============================';
