@@ -16,7 +16,7 @@ local distributions = {
 	hypergeometric = function(N, r, n)
 		local E = n*(r/N);
 		local Var = n*(r/N)*((N-r)/N)*((N-n)/(N-1));
-		PrintDistInfo(Var, E)
+		return E, Var;
 	end
 }
 
@@ -27,5 +27,6 @@ local testParams = {
 local equalstring = '==============================';
 for i, v in pairs(distributions) do
 	print(equalstring.." "..i.." "..equalstring);
-	v(unpack(testParams[i]));
+	local E, Var = v(unpack(testParams[i]));
+	PrintDistInfo(Var, E);
 end
