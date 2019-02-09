@@ -1,9 +1,22 @@
+local function CalculateExSquared(Var, E)
+	return Var + E^2
+end
+local function CalculateStdVar(Var)
+	return math.sqrt(Var);
+end
+
+local function PrintDistInfo(Var, E)
+	print('E[x] = '..E);
+	print('Var[x] = '..Var);
+	print('E[x^2] = '..CalculateExSquared(E, Var));
+	print("Standard Deviation = "..CalculateStdVar(Var));
+end
+
 local distributions = {
 	hypergeometric = function(N, r, n)
 		local E = n*(r/N);
-		print('E[x] = '..E);
 		local Var = n*(r/N)*((N-r)/N)*((N-n)/(N-1));
-		print('Var[x] = '..Var);
+		PrintDistInfo(Var, E)
 	end
 }
 
