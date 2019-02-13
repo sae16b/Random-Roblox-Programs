@@ -1,0 +1,23 @@
+-- Incrementally gets probabilites of finding particle in
+-- an infinite square well. Also displays the sum at the end to
+-- ensure it adds up correctly to 1.
+
+local pi = math.pi;
+local n = 2;
+
+
+local L = 1;
+local x = .007;
+
+local A = math.sqrt(2/L);
+
+local sum = 0;
+for i = x, 1, x do
+	local psi = A*math.sin((n*pi*i)/L);
+	
+	local psiSquared = (psi^2);
+	
+	sum = sum + x*psiSquared;
+	print(i, ',', x*psiSquared);
+end
+print(sum);
